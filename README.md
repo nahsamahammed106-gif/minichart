@@ -51,7 +51,6 @@ Or copy [`src/minichart.js`](src/minichart.js) into your project. It's a single 
 | `series` | array of `{ name, data, color, colors }` | | The data. `null` leaves a gap; values that aren't numbers are dropped. Invalid colours fall back to the palette. `colors` sets one colour per bar (bar charts only) |
 | `format` | `value => string` | compact number (1.2k) | Formats the y-axis and tooltip values |
 | `zero` | boolean | `true` for bar and area | Always include zero on the y-axis |
-| `sound` | boolean | `false` | Show a ♪ button that plays the data as rising and falling notes |
 | `animate` | boolean | `true` | Animate the first draw and updates. Always off when the visitor prefers reduced motion |
 
 ## Methods
@@ -120,7 +119,7 @@ Measured in Chrome on an M1 MacBook Air: a 700 × 300 line chart, animations off
 
 | Library | Download (gzip) | Start-up | 1,000 points | 100,000 points |
 |---|---|---|---|---|
-| **MiniChart** | **8.8 KB** | **2.5 ms** | 21 ms | 21 ms |
+| **MiniChart** | **8.4 KB** | **2.5 ms** | 21 ms | 21 ms |
 | uPlot 1.6.30 | 21 KB | 3.4 ms | 20 ms | 21 ms |
 | Chart.js 4.4.1 | 68 KB | 7.4 ms | 22 ms | 464 ms |
 | ApexCharts 3.54.1 | 137 KB | 16 ms | 199 ms | 28.7 s at 10,000 points |

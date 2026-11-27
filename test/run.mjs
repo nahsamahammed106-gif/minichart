@@ -22,7 +22,7 @@ const chromePath = process.env.CHROME || ['/Applications/Google Chrome.app/Conte
 if (!chromePath) { console.error('Chrome not found. Set CHROME=/path/to/chrome'); process.exit(2); }
 const profile = mkdtempSync(join(tmpdir(), 'mc-'));
 const chrome = spawn(chromePath, ['--headless=new', '--remote-debugging-port=0', '--no-first-run', '--window-size=1280,900',
-  '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--autoplay-policy=no-user-gesture-required',
+  '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
   `--user-data-dir=${profile}`, ...(process.env.GITHUB_ACTIONS ? ['--no-sandbox'] : []), 'about:blank']); // GitHub's Ubuntu runners block Chrome's sandbox
 const port = await new Promise((ok, bad) => {
   chrome.stderr.on('data', d => { const m = /ws:\/\/127\.0\.0\.1:(\d+)\//.exec(d); if (m) ok(m[1]); });

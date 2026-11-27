@@ -22,8 +22,6 @@ declare namespace MiniChart {
     format?: (value: number | null) => string;
     /** Include zero on the y-axis. Default: true for bar and area, false for line. */
     zero?: boolean;
-    /** Show the ♪ button that plays the data as sound. Default: false. */
-    sound?: boolean;
     /** Animate the first draw and updates. Default: true (always off with prefers-reduced-motion). */
     animate?: boolean;
   }

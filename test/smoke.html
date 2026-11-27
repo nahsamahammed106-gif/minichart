@@ -191,19 +191,6 @@ function drawCost(run) {
     return (name === 'export.png' && href.startsWith('data:image/png') && img.width === cv.width && corner[3] === 255) || [name, img.width, cv.width, [...corner]];
   });
 
-  await test('sonify: schedules one rising note per point, then closes', async () => {
-    const el = box(); MiniChart(el, { sound: true, series: [{ name: 'A', data: [1, 2, 3, null, 5] }] }); await wait(700);
-    const freqs = []; let closed = false, started = false; const Orig = window.AudioContext;
-    window.AudioContext = class extends Orig {
-      createOscillator() { const o = super.createOscillator(), f = o.frequency.setValueAtTime.bind(o.frequency); o.frequency.setValueAtTime = (v, t) => (freqs.push(v), f(v, t)); const s = o.start.bind(o); o.start = t => (started = true, s(t)); return o; }
-      close() { closed = true; return super.close(); }
-    };
-    el.querySelector('[data-t=play]').click(); window.AudioContext = Orig;
-    for (let t = 0; t < 50 && !closed; t++) await wait(100); // wait for playback to end (up to 5 s), not a fixed delay
-    const rising = freqs.every((f, i) => !i || f > freqs[i - 1]);
-    return (started && freqs.length === 4 && rising && freqs[0] >= 220 && freqs[3] <= 1400 && closed) || { started, freqs, closed };
-  });
-
   await test('big data: 100k points zoom redraw under 50 ms', async () => {
     let z = 0; const el = box(); MiniChart(el, { type: 'area', animate: false, series: [{ name: 'A', data: Array.from({ length: 100000 }, () => z += Math.random() - .5) }] });
     await wait(1500); const ms = drawCost(() => { for (let k = 0; k < 5; k++) { key(el, '+'); key(el, '-'); } }); // average 10 redraws
@@ -294,15 +281,17 @@ function drawCost(run) {
     try { MiniChart('#does-not-exist', {}); return 'no throw'; } catch (e) { return e.message === 'MiniChart: element not found' || e.message; }
   });
 
-  await test('SEC: update/destroy after destroy are harmless; sound playhead stops', async () => {
-    const el = box(); const c = MiniChart(el, { sound: true, series: [{ name: 'A', data: series(20) }] }); await frames();
-    const Orig = window.AudioContext; window.AudioContext = class extends OfflineAudioContext { constructor() { super(1, 44100, 44100); } close() { return Promise.resolve(); } };
-    el.querySelector('[data-t=play]').click(); window.AudioContext = Orig;
+  await test('SEC: update/destroy after destroy are harmless', async () => {
+    const el = box(); const c = MiniChart(el, { series: [{ name: 'A', data: series(20) }] }); await frames();
     c.destroy(); c.destroy(); c.update({ series: [{ data: [1] }] }); await wait(200);
     return (el.innerHTML === '' && errors.length === 0) || [el.innerHTML.length, errors];
   });
 
-  // ---- pass 4: performance ----
+  await test('no sound button anywhere', async () => {
+    const el = box(); MiniChart(el, { sound: true, series: [{ name: 'A', data: [1, 2] }] }); await frames();
+    return (!el.querySelector('[data-t=play]') && !!el.querySelector('[data-t=png]')) || 'play button found';
+  });
+
   await test('PERF: hovering 50k bars stays under 20 ms per redraw', async () => {
     let z = 0; const el = box(); MiniChart(el, { type: 'bar', animate: false, series: [{ name: 'A', data: Array.from({ length: 50000 }, () => z += Math.random() - .5) }] });
     await wait(1500); const ms = drawCost(() => { for (let k = 0; k < 20; k++) P(el, 'pointermove', 100 + k * 10); });
@@ -344,12 +333,6 @@ function drawCost(run) {
   await test('null entries in series are ignored', async () => {
     const el = box(); MiniChart(el, { series: [null, { name: 'A', data: [1, 2] }, undefined, { name: 'B', data: [2, 1] }] }); await frames();
     return (errors.length === 0 && el.querySelectorAll('[data-i]').length === 2) || errors;
-  });
-
-  await test('sound button is opt-in: hidden by default, shown with sound: true', async () => {
-    const a = box(), b = box();
-    MiniChart(a, { series: [{ name: 'A', data: [1, 2] }] }); MiniChart(b, { sound: true, series: [{ name: 'A', data: [1, 2] }] });
-    return (!a.querySelector('[data-t=play]') && !!b.querySelector('[data-t=play]') && !!a.querySelector('[data-t=png]')) || 'wrong';
   });
 
   await test('keyboard announcement is correct even when redraws are delayed', async () => {

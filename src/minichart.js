@@ -1,5 +1,5 @@
 /*! MiniChart · tiny interactive canvas charts · MIT
- *  const c = MiniChart('#el', { type: 'line'|'area'|'bar', title, labels: [...], series: [{ name, data: [...], color? }], format?, zero?, sound? })
+ *  const c = MiniChart('#el', { type: 'line'|'area'|'bar', title, labels: [...], series: [{ name, data: [...], color? }], format?, zero? })
  *  c.update({ series }) · c.reset() · c.destroy()
  */
 (function (root) {
@@ -327,13 +327,13 @@
     function legend() {
       // A single series needs no legend: the chart's title names it.
       html(leg, (S.length > 1 ? S.map((s, si) => `<button type="button" aria-pressed="${!hide.has(si)}" data-i="${si}"><i></i>${esc(s.name)}</button>`).join('') : '') +
-        '<span class="mc-tools">' + (o.sound ? '<button type="button" data-t="play" title="Play as sound" aria-label="Play the data as sound">♪</button>' : '') + '<button type="button" data-t="png" title="Download PNG" aria-label="Download chart as PNG">⤓</button></span>');
+        '<span class="mc-tools"><button type="button" data-t="png" title="Download PNG" aria-label="Download chart as PNG">⤓</button></span>');
       swatch(leg, S);
     }
     leg.onclick = e => {
       const btn = e.target.closest('button');
       if (!btn) return;
-      if (btn.dataset.t) return btn.dataset.t === 'play' ? play() : png();
+      if (btn.dataset.t) return png();
       const i = +btn.dataset.i;
       hide.has(i) ? hide.delete(i) : hide.add(i);
       btn.setAttribute('aria-pressed', !hide.has(i));
@@ -345,32 +345,6 @@
     const unlit = () => { hl = -1; tick(); };
     leg.addEventListener('pointerleave', unlit);
     leg.addEventListener('focusout', unlit);
-
-    // Sonify: pitch follows the first visible series, playhead sweeps the tooltip along.
-    function play() {
-      const si = vis()[0], AC = root.AudioContext;
-      if (si == null || !AC) return;
-      const A = new AC(), osc = A.createOscillator(), g = A.createGain();
-      const a = Math.ceil(i0), b = Math.floor(i1), n = b - a + 1, d = Math.min(0.15, 6 / n), t = A.currentTime;
-      osc.type = 'triangle';
-      osc.connect(g).connect(A.destination);
-      g.gain.setValueAtTime(0.12, t);
-      g.gain.setValueAtTime(0, t + n * d);
-      for (let k = 0; k < n; k++) {
-        const v = S[si].data[a + k];
-        if (v != null) osc.frequency.setValueAtTime(220 * 2 ** (2.5 * (v - ys.lo) / (ys.hi - ys.lo)), t + k * d);
-      }
-      osc.start(t);
-      osc.stop(t + n * d + 0.05);
-      osc.onended = () => A.close();
-      const st = performance.now();
-      (function sweep() {
-        const k = (performance.now() - st) / 1000 / d | 0;
-        hov = k < n ? a + k : -1;
-        tick();
-        if (k < n && !dead) requestAnimationFrame(sweep);
-      })();
-    }
 
     function png() {
       let n = el, bg;

@@ -109,7 +109,7 @@
       <div class="actions">
         <a class="btn primary" href="https://github.com/nahsamahammed106-gif/minichart">View on GitHub</a>
         <a class="btn" href="https://cdn.jsdelivr.net/gh/nahsamahammed106-gif/minichart@v0.1.1/src/minichart.js">Download minichart.js</a>
-        <span class="fact">8.8 KB gzipped, MIT licensed</span>
+        <span class="fact">8.4 KB gzipped, MIT licensed</span>
       </div>
 
       <div id="hero"></div>
@@ -160,7 +160,7 @@
       <div class="feature">
         <div class="copy">
           <h3>Works with a keyboard and a screen reader</h3>
-          <p>Press <kbd>Tab</kbd> to reach the chart, then use the arrow keys. Each value is read aloud, a summary describes the whole chart, and a hidden table holds the data. Press ♪ to hear the trend.</p>
+          <p>Press <kbd>Tab</kbd> to reach the chart, then use the arrow keys. Each value is read aloud, a summary describes the whole chart, and a hidden table holds the data.</p>
           <p class="said" aria-hidden="true" id="said">The screen reader's words will appear here.</p>
         </div>
         <div id="a11y" class="chart"></div>
@@ -234,7 +234,7 @@
   MiniChart('#size', {
     type: 'bar', title: 'Download size, gzipped', labels: ['MiniChart', 'uPlot', 'Chart.js', 'ApexCharts'],
     format: v => v == null ? '–' : Math.round(v * 10) / 10 + ' KB',
-    series: [{ name: 'Gzipped size', data: [8.8, 21, 68, 137.1], color: grey, colors: [blue] }],
+    series: [{ name: 'Gzipped size', data: [8.4, 21, 68, 137.1], color: grey, colors: [blue] }],
   });
   MiniChart('#speed', {
     type: 'bar', title: 'Time to draw 100,000 points', labels: ['MiniChart', 'uPlot', 'Chart.js', 'ApexCharts'],
@@ -253,7 +253,7 @@
   MiniChart('#arabic', { title: 'زوار المعارض', labels: ar, format: v => v == null ? '–' : arNum.format(Math.round(v)), series: [{ name: 'الزوار', data: walk(12, 420, 160, 120) }, { name: 'الفعاليات', data: walk(12, 70, 30, 15) }] });
 
   // Keyboard and screen reader: mirror the chart's live announcements so sighted visitors can see them.
-  MiniChart('#a11y', { title: 'Workshop sign-ups', sound: true, labels: months, series: [{ name: 'Sign-ups', data: walk(12, 140, 60, 30).map(Math.round) }] });
+  MiniChart('#a11y', { title: 'Workshop sign-ups', labels: months, series: [{ name: 'Sign-ups', data: walk(12, 140, 60, 30).map(Math.round) }] });
   const said = document.getElementById('said'), live = document.querySelector('#a11y [aria-live]');
   new MutationObserver(() => { if (!live.textContent) return; said.innerHTML = '<strong>Screen reader:</strong> '; said.append(live.textContent); }).observe(live, { childList: true, characterData: true, subtree: true });
 
