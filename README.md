@@ -31,6 +31,14 @@ npm install minichart
 import MiniChart from 'minichart';
 ```
 
+From a CDN, pinned to a release:
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/nahsamahammed106-gif/minichart@v0.1.0/src/minichart.js"
+        integrity="sha384-htM7+vzNcGCxqHn91dGgqgsXGe2Iy0pGTjo3zAuukHSRf8YnRC2DyaCBO0WzEWiW"
+        crossorigin="anonymous"></script>
+```
+
 Or copy [`src/minichart.js`](src/minichart.js) into your project. It's a single file.
 
 ## Options
