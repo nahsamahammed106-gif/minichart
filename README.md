@@ -1,6 +1,6 @@
 # MiniChart
 
-Interactive line, area and bar charts in about 8 KB, with no dependencies.
+Interactive line, area and bar charts in under 9 KB, with no dependencies.
 
 Zoom, pan, pinch, tooltips, a measure tool, keyboard and screen-reader support, dark mode, Arabic right-to-left layouts and 100,000-point datasets work out of the box.
 
@@ -40,7 +40,7 @@ Or copy [`src/minichart.js`](src/minichart.js) into your project. It's a single 
 | `type` | `'line'`, `'area'` or `'bar'` | `'line'` | Chart type |
 | `title` | string | | Used in the screen-reader summary, the data table caption and the PNG file name |
 | `labels` | array | point index | One label per point along the x-axis |
-| `series` | array of `{ name, data, color }` | | The data. `null` leaves a gap; values that aren't numbers are dropped. Invalid colours fall back to the palette |
+| `series` | array of `{ name, data, color, colors }` | | The data. `null` leaves a gap; values that aren't numbers are dropped. Invalid colours fall back to the palette. `colors` sets one colour per bar (bar charts only) |
 | `format` | `value => string` | compact number (1.2k) | Formats the y-axis and tooltip values |
 | `zero` | boolean | `true` for bar and area | Always include zero on the y-axis |
 | `sound` | boolean | `false` | Show a ♪ button that plays the data as rising and falling notes |
@@ -70,7 +70,7 @@ Scrolling over a chart scrolls the page. The wheel only zooms with <kbd>Ctrl</kb
 
 ## Styling
 
-The chart uses the CSS `color` of its element for text and grid lines, so it follows your page's light and dark themes automatically.
+The chart uses the CSS `color` of its element for text and grid lines, so it follows your page's light and dark themes automatically. When that text colour is light, the chart switches to a darker version of its default palette that stays readable on dark backgrounds. Both palettes pass a colour-blindness check.
 
 ```css
 #chart {
@@ -80,6 +80,8 @@ The chart uses the CSS `color` of its element for text and grid lines, so it fol
   --mc-tip-color: #1a2740;      /* tooltip text */
 }
 ```
+
+Text in the chart uses your page's font. A chart with one series has no legend, because its title already names it.
 
 On a page with `dir="rtl"`, the time axis runs right to left and the value axis moves to the right.
 
@@ -108,7 +110,7 @@ Measured in Chrome on an M1 MacBook Air: a 700 × 300 line chart, animations off
 
 | Library | Download (gzip) | Start-up | 1,000 points | 100,000 points |
 |---|---|---|---|---|
-| **MiniChart** | **8.3 KB** | **2.5 ms** | 21 ms | 21 ms |
+| **MiniChart** | **8.7 KB** | **2.5 ms** | 21 ms | 21 ms |
 | uPlot 1.6.30 | 21 KB | 3.4 ms | 20 ms | 21 ms |
 | Chart.js 4.4.1 | 68 KB | 7.4 ms | 22 ms | 464 ms |
 | ApexCharts 3.54.1 | 137 KB | 16 ms | 199 ms | 28.7 s at 10,000 points |

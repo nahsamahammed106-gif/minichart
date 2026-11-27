@@ -30,4 +30,4 @@ README.md  LICENSE (MIT)  package.json  .github/workflows/ci.yml
 4. Publish: maintainer pushes to GitHub and npm.
 
 ## Decisions
-Name `minichart` · MIT · v1 types line/area/bar · no build step and no dev dependencies (minifying was skipped: 8.3 KB gzipped is already under budget).
+Name `minichart` · MIT · v1 types line/area/bar · no build step and no dev dependencies (minifying was skipped: 8.7 KB gzipped is already under budget).

@@ -4,8 +4,10 @@
  */
 (function (root) {
   'use strict';
+  // Same 8 hues in fixed order; the dark set is stepped down to stay readable on dark backgrounds (both pass a colour-blindness validator).
   const PAL = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
-  const CSS = `.mc{position:relative;display:flex;flex-direction:column;gap:8px;height:var(--mc-height,300px);font:12px/1.4 system-ui,sans-serif;outline:0}
+  const PAL_DARK = ['#3b82f6', '#d97706', '#0f9d6e', '#ef4444', '#8b5cf6', '#0891b2', '#ec4899', '#65a30d'];
+  const CSS = `.mc{position:relative;display:flex;flex-direction:column;gap:8px;height:var(--mc-height,300px);font-size:12px;line-height:1.4;outline:0}
 .mc:focus-visible{outline:2px solid #3b82f6;outline-offset:4px;border-radius:4px}
 .mc-plot{position:relative;flex:1;min-height:0;touch-action:pan-y;cursor:crosshair}
 .mc canvas{position:absolute;inset:0;width:100%;height:100%}
@@ -53,7 +55,7 @@
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const R = 12, T = 10, B = 24, ptr = new Map(), hide = new Set();
     let o = {}, S = [], N = 0, i0 = 0, i1 = 0, W = 0, H = 0, L = 40, rtl = false;
-    let hov = -1, hl = -1, from = null, t0 = 0, raf = 0, ys = null, drag = null, meas = null, pinch = 0, press = 0, dead = false;
+    let hov = -1, hl = -1, from = null, t0 = 0, raf = 0, ys = null, drag = null, meas = null, pinch = 0, press = 0, dead = false, dark = false;
 
     const bar = () => o.type === 'bar';
     const half = () => bar() || N === 1 ? 0.5 : 0;
@@ -72,6 +74,7 @@
     const tick = () => { if (!dead) raf = raf || requestAnimationFrame(draw); };
     const px = e => e.clientX - plot.getBoundingClientRect().left;
     const vis = () => S.map((_, si) => si).filter(si => !hide.has(si));
+    const recolor = () => S.forEach((s, i) => { s.color = s.own || (dark ? PAL_DARK : PAL)[i % PAL.length]; });
     const trace = seg => { ctx.beginPath(); seg.forEach(([x, y], j) => j ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); };
 
     function val(si, i, e) {
@@ -109,7 +112,9 @@
       ctx.clearRect(0, 0, W, H);
       rtl = cs.direction === 'rtl';
       ctx.direction = cs.direction;
-      ctx.font = '11px system-ui, sans-serif';
+      const [cr, cg, cb] = color.match(/[\d.]+/g).map(Number), isDark = cr * 0.299 + cg * 0.587 + cb * 0.114 > 140; // light text = dark page
+      if (isDark !== dark) { dark = isDark; recolor(); swatch(leg, S); }
+      ctx.font = '11px ' + cs.fontFamily; // canvas text uses the page's font, Arabic included
       const a = Math.max(0, Math.floor(i0)), b = Math.min(N - 1, Math.ceil(i1)), V = vis();
 
       // y-axis auto-fits the visible, un-hidden data and springs toward it
@@ -160,7 +165,7 @@
         ctx.globalAlpha = hl < 0 || hl === si ? 1 : 0.15;
         ctx.fillStyle = ctx.strokeStyle = s.color;
         if (bar()) {
-          const bw = per * 0.8 / V.length, y0 = Y(0), r = Math.min(3, bw / 3);
+          const bw = per * 0.8 / V.length, y0 = Y(0), r = Math.min(4, bw / 3);
           if (bw < 2) { // too dense for separate bars: one min/max column per pixel
             for (const seg of path(si, a, b, e)) for (const [x, y] of seg) ctx.fillRect(x, Math.min(y, y0), 1, Math.abs(y0 - y));
             return;
@@ -170,7 +175,8 @@
             if (v == null) continue;
             const y = Y(v);
             ctx.beginPath();
-            ctx.roundRect(X(i) - per * 0.4 + (rtl ? V.length - 1 - k : k) * bw + 0.5, Math.min(y, y0), Math.max(1, bw - 1), Math.abs(y0 - y), v >= 0 ? [r, r, 0, 0] : [0, 0, r, r]);
+            ctx.fillStyle = (s.colors && s.colors[i]) || s.color;
+            ctx.roundRect(X(i) - per * 0.4 + (rtl ? V.length - 1 - k : k) * bw + 1, Math.min(y, y0), Math.max(1, bw - 2), Math.abs(y0 - y), v >= 0 ? [r, r, 0, 0] : [0, 0, r, r]);
             ctx.fill();
           }
           return;
@@ -319,7 +325,8 @@
     el.addEventListener('keydown', onKey);
 
     function legend() {
-      html(leg, S.map((s, si) => `<button type="button" aria-pressed="${!hide.has(si)}" data-i="${si}"><i></i>${esc(s.name)}</button>`).join('') +
+      // A single series needs no legend: the chart's title names it.
+      html(leg, (S.length > 1 ? S.map((s, si) => `<button type="button" aria-pressed="${!hide.has(si)}" data-i="${si}"><i></i>${esc(s.name)}</button>`).join('') : '') +
         '<span class="mc-tools">' + (o.sound ? '<button type="button" data-t="play" title="Play as sound" aria-label="Play the data as sound">♪</button>' : '') + '<button type="button" data-t="png" title="Download PNG" aria-label="Download chart as PNG">⤓</button></span>');
       swatch(leg, S);
     }
@@ -399,9 +406,11 @@
       o = { type: 'line', format: fmt, ...o, ...next };
       S = (o.series || []).filter(Boolean).map((s, i) => ({
         name: 'Series ' + (i + 1), ...s,
-        color: norm(s.color) || PAL[i % PAL.length],
+        own: norm(s.color),
+        colors: s.colors && Array.from(s.colors, norm), // ponytail: per-point colours only apply to bars
         data: Array.from(s.data || [], num) // drop NaN/Infinity/junk: they break scales
       }));
+      recolor();
       const n = o.labels ? o.labels.length : Math.max(0, ...S.map(s => s.data.length));
       if (n !== N || !prev) { N = n; i0 = 0; i1 = Math.max(0, N - 1); }
       if (!reduce && o.animate !== false) { from = prev || S.map(s => s.data.map(() => 0)); t0 = performance.now(); }
@@ -420,6 +429,7 @@
     ro.observe(plot);
     mo.observe(document.documentElement, { attributes: true });
     mq.addEventListener('change', tick);
+    if (document.fonts) document.fonts.ready.then(tick); // redraw canvas text once web fonts arrive
     update(opts);
 
     return {

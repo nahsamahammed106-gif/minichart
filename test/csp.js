@@ -2,7 +2,7 @@
 const violations = [];
 document.addEventListener('securitypolicyviolation', e => violations.push(e.violatedDirective + ' ' + (e.sample || '')));
 const el = document.getElementById('c');
-MiniChart(el, { labels: ['a', 'b', 'c'], series: [{ name: 'A', data: [1, 3, 2] }] });
+MiniChart(el, { labels: ['a', 'b', 'c'], series: [{ name: 'A', data: [1, 3, 2] }, { name: 'B', data: [2, 1, 3] }] });
 setTimeout(() => {
   const styled = getComputedStyle(el).display === 'flex';
   const rendered = !!el.querySelector('.mc-leg [data-i]') && !!el.querySelector('[data-t=png]') && !!el.querySelector('table tr'); // innerHTML went through Trusted Types

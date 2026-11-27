@@ -340,8 +340,8 @@ function drawCost(run) {
   });
 
   await test('null entries in series are ignored', async () => {
-    const el = box(); MiniChart(el, { series: [null, { name: 'A', data: [1, 2] }, undefined] }); await frames();
-    return (errors.length === 0 && el.querySelectorAll('[data-i]').length === 1) || errors;
+    const el = box(); MiniChart(el, { series: [null, { name: 'A', data: [1, 2] }, undefined, { name: 'B', data: [2, 1] }] }); await frames();
+    return (errors.length === 0 && el.querySelectorAll('[data-i]').length === 2) || errors;
   });
 
   await test('sound button is opt-in: hidden by default, shown with sound: true', async () => {
@@ -356,6 +356,29 @@ function drawCost(run) {
     try { key(el, 'ArrowRight'); const first = pick(el).live.textContent; key(el, 'ArrowRight'); const second = pick(el).live.textContent;
       return (first.startsWith('c') && second.startsWith('d')) || [first, second]; }
     finally { window.requestAnimationFrame = raf; }
+  });
+
+  await test('dark page (light text) switches to the dark palette and back', async () => {
+    const el = box(); el.style.color = 'rgb(230, 235, 240)';
+    MiniChart(el, { series: [{ name: 'A', data: [1, 2] }, { name: 'B', data: [2, 3] }] }); await frames();
+    const darkSw = el.querySelectorAll('.mc-leg [data-i] i')[1].style.background;
+    el.style.color = 'rgb(20, 30, 50)'; document.documentElement.setAttribute('data-x', Date.now()); await frames();
+    const lightSw = el.querySelectorAll('.mc-leg [data-i] i')[1].style.background;
+    return (darkSw === 'rgb(217, 119, 6)' && lightSw === 'rgb(245, 158, 11)') || [darkSw, lightSw];
+  });
+
+  await test('bar charts accept one colour per bar', async () => {
+    const el = box(); MiniChart(el, { type: 'bar', animate: false, series: [{ name: 'A', data: [5, 5], colors: ['#ff0000', null] }] }); await frames(); await frames();
+    const c = el.querySelector('canvas'), g = c.getContext('2d'), w = c.width, h = c.height;
+    const px = x => [...g.getImageData(Math.round(x * w), Math.round(h * 0.6), 1, 1).data].slice(0, 3).join(',');
+    let red = 0, other = 0;
+    for (let f = 0.15; f < 0.95; f += 0.01) { const p = px(f); if (p === '255,0,0') red++; else if (p === '59,130,246') other++; }
+    return (red > 3 && other > 3) || [red, other];
+  });
+
+  await test('single series: no legend entry, tools still there', async () => {
+    const el = box(); MiniChart(el, { series: [{ name: 'Only', data: [1, 2] }] }); await frames();
+    return (!el.querySelector('.mc-leg [data-i]') && !!el.querySelector('[data-t=png]')) || el.querySelector('.mc-leg').innerHTML;
   });
 
   await test('no uncaught errors overall', async () => errors.length === 0 || errors);

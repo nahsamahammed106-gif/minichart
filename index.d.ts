@@ -8,6 +8,8 @@ declare namespace MiniChart {
     data: ArrayLike<number | null | undefined>;
     /** Any CSS colour. Invalid colours fall back to the built-in palette. */
     color?: string;
+    /** Bar charts only: one colour per bar, for example to highlight one bar. Missing entries use `color`. */
+    colors?: ArrayLike<string | null | undefined>;
   }
   interface Options {
     type?: 'line' | 'area' | 'bar';
