@@ -18,9 +18,8 @@
 .mc-leg{display:flex;flex-wrap:wrap;gap:2px 6px;align-items:center}
 .mc-leg button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:28px;min-width:28px;justify-content:center;padding:3px 8px;border-radius:6px}
 .mc-leg button:hover{background:#8882}
-.mc-leg button:focus-visible{outline:2px solid #3b82f6}
 .mc-leg button[aria-pressed=false]{opacity:.45;text-decoration:line-through}
-.mc-tools{margin-inline-start:auto}
+.mc-leg [data-t]{margin-inline-start:auto}
 .mc-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}`;
   const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
   const nf = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
@@ -43,10 +42,7 @@
   function MiniChart(el, opts) {
     if (typeof el === 'string') el = document.querySelector(el);
     if (!el) throw new Error('MiniChart: element not found');
-    if (!sheet) { // constructable stylesheet: allowed under strict CSP; <style> fallback for Safari < 16.4
-      if (document.adoptedStyleSheets) { sheet = new CSSStyleSheet(); sheet.replaceSync(CSS); document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]; }
-      else sheet = document.head.appendChild(Object.assign(document.createElement('style'), { textContent: CSS }));
-    }
+    if (!sheet) { sheet = new CSSStyleSheet(); sheet.replaceSync(CSS); document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]; } // allowed under strict CSP
     el.classList.add('mc');
     el.tabIndex = 0;
     el.setAttribute('role', 'figure');
@@ -327,7 +323,7 @@
     function legend() {
       // A single series needs no legend: the chart's title names it.
       html(leg, (S.length > 1 ? S.map((s, si) => `<button type="button" aria-pressed="${!hide.has(si)}" data-i="${si}"><i></i>${esc(s.name)}</button>`).join('') : '') +
-        '<span class="mc-tools"><button type="button" data-t="png" title="Download PNG" aria-label="Download chart as PNG">⤓</button></span>');
+        '<button type="button" data-t="png" title="Download PNG" aria-label="Download chart as PNG">⤓</button>');
       swatch(leg, S);
     }
     leg.onclick = e => {
@@ -339,7 +335,7 @@
       btn.setAttribute('aria-pressed', !hide.has(i));
       tick();
     };
-    const hilite = e => { const b = e.target.closest && e.target.closest('[data-i]'); hl = b ? +b.dataset.i : -1; tick(); };
+    const hilite = e => { const b = e.target.closest('[data-i]'); hl = b ? +b.dataset.i : -1; tick(); };
     leg.addEventListener('pointerover', hilite);
     leg.addEventListener('focusin', hilite);
     const unlit = () => { hl = -1; tick(); };
@@ -404,7 +400,7 @@
     ro.observe(plot);
     mo.observe(document.documentElement, { attributes: true });
     mq.addEventListener('change', tick);
-    if (document.fonts) document.fonts.ready.then(tick); // redraw canvas text once web fonts arrive
+    document.fonts.ready.then(tick); // redraw canvas text once web fonts arrive
     update(opts);
 
     return {
