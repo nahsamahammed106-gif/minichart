@@ -382,7 +382,7 @@
       ctx.fillRect(0, 0, cv.width, cv.height);
       ctx.restore();
       const link = document.createElement('a');
-      link.download = (o.title || 'chart') + '.png';
+      link.download = String(o.title || 'chart').replace(/[\0-\x1f\x7f/\\:*?"<>|]/g, '').slice(0, 100) + '.png';
       link.href = cv.toDataURL();
       link.click();
       tick();
@@ -397,13 +397,14 @@
       el.setAttribute('aria-label', `${o.title ? o.title + '. ' : ''}${o.type} chart, ${N} points. ${sum.join('. ')}. Arrow keys explore, plus and minus zoom, 0 resets.`);
       const rows = Math.min(N, 500); // ponytail: table capped at 500 rows, paginate if screen-reader users need all of a huge series
       html(table, `<caption>${esc(o.title || 'Chart data')}${N > rows ? ` (first ${rows} of ${N})` : ''}</caption><tr><th>Label</th>${S.map(s => `<th>${esc(s.name)}</th>`).join('')}</tr>` +
-        Array.from({ length: rows }, (_, i) => `<tr><th>${esc(lab(i))}</th>${S.map(s => `<td>${fmt(s.data[i])}</td>`).join('')}</tr>`).join(''));
+        Array.from({ length: rows }, (_, i) => `<tr><th>${esc(lab(i))}</th>${S.map(s => `<td>${esc(fmt(s.data[i]))}</td>`).join('')}</tr>`).join(''));
     }
 
     function update(next) {
       if (dead) return;
       const prev = S.length ? S.map(s => s.data) : null;
-      o = { type: 'line', format: fmt, ...o, ...next };
+      o = { type: 'line', ...o, ...next };
+      if (typeof o.format !== 'function') o.format = fmt;
       S = (o.series || []).filter(Boolean).map((s, i) => ({
         name: 'Series ' + (i + 1), ...s,
         own: norm(s.color),
@@ -434,7 +435,7 @@
 
     return {
       update, reset,
-      destroy() { dead = true; ro.disconnect(); mo.disconnect(); mq.removeEventListener('change', tick); cancelAnimationFrame(raf); clearTimeout(press); el.removeEventListener('keydown', onKey); el.classList.remove('mc'); el.removeAttribute('tabindex'); el.removeAttribute('role'); el.removeAttribute('aria-label'); el.innerHTML = ''; }
+      destroy() { dead = true; ro.disconnect(); mo.disconnect(); mq.removeEventListener('change', tick); cancelAnimationFrame(raf); clearTimeout(press); el.removeEventListener('keydown', onKey); el.classList.remove('mc'); el.removeAttribute('tabindex'); el.removeAttribute('role'); el.removeAttribute('aria-label'); el.replaceChildren(); } // replaceChildren: allowed under Trusted Types
     };
   }
 

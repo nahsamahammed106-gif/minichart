@@ -2,14 +2,32 @@
   "name": "minichart",
   "version": "0.1.0",
   "description": "An interactive chart library under 9 KB: zoom, pan, tooltips, keyboard and screen-reader support, Arabic RTL, no dependencies.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nahsamahammed106-gif/minichart.git"
+  },
+  "homepage": "https://nahsamahammed106-gif.github.io/minichart/demo/",
+  "bugs": "https://github.com/nahsamahammed106-gif/minichart/issues",
   "main": "src/minichart.js",
   "types": "index.d.ts",
-  "files": ["src/minichart.js", "index.d.ts"],
+  "files": [
+    "src/minichart.js",
+    "index.d.ts"
+  ],
   "scripts": {
     "test": "node test/run.mjs",
-    "size": "gzip -9c src/minichart.js | wc -c"
+    "size": "gzip -9c src/minichart.js | wc -c | tr -d \" \""
   },
-  "keywords": ["chart", "charts", "canvas", "line-chart", "bar-chart", "zoom", "accessible", "rtl", "lightweight"],
-  "license": "MIT",
-  "engines": { "node": ">=22" }
+  "keywords": [
+    "chart",
+    "charts",
+    "canvas",
+    "line-chart",
+    "bar-chart",
+    "zoom",
+    "accessible",
+    "rtl",
+    "lightweight"
+  ],
+  "license": "MIT"
 }

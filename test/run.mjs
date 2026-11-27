@@ -4,14 +4,15 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { join, extname, normalize } from 'node:path';
-import { existsSync, mkdtempSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 
 const root = join(import.meta.dirname, '..');
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript' };
 const server = createServer(async (req, res) => {
-  const file = join(root, normalize(decodeURIComponent(req.url.split('?')[0])).replace(/^(\.\.[/\\])+/, ''));
-  try { const body = await readFile(file); res.writeHead(200, { 'content-type': types[extname(file)] || 'text/plain' }); res.end(body); }
+  try {
+    const file = join(root, normalize(decodeURIComponent(req.url.split('?')[0])).replace(/^(\.\.[/\\])+/, ''));
+    const body = await readFile(file); res.writeHead(200, { 'content-type': types[extname(file)] || 'text/plain' }); res.end(body); }
   catch { res.writeHead(404); res.end(); }
 }).listen(0, '127.0.0.1');
 await new Promise(r => server.once('listening', r));
@@ -19,9 +20,10 @@ const base = `http://127.0.0.1:${server.address().port}`;
 
 const chromePath = process.env.CHROME || ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/usr/bin/google-chrome', '/usr/bin/chromium'].find(existsSync);
 if (!chromePath) { console.error('Chrome not found. Set CHROME=/path/to/chrome'); process.exit(2); }
+const profile = mkdtempSync(join(tmpdir(), 'mc-'));
 const chrome = spawn(chromePath, ['--headless=new', '--remote-debugging-port=0', '--no-first-run', '--window-size=1280,900',
   '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--autoplay-policy=no-user-gesture-required',
-  `--user-data-dir=${mkdtempSync(join(tmpdir(), 'mc-'))}`, ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank']); // CI runners block Chrome's sandbox
+  `--user-data-dir=${profile}`, ...(process.env.GITHUB_ACTIONS ? ['--no-sandbox'] : []), 'about:blank']); // GitHub's Ubuntu runners block Chrome's sandbox
 const port = await new Promise((ok, bad) => {
   chrome.stderr.on('data', d => { const m = /ws:\/\/127\.0\.0\.1:(\d+)\//.exec(d); if (m) ok(m[1]); });
   chrome.on('exit', c => bad(new Error('Chrome exited ' + c)));
@@ -55,9 +57,13 @@ try {
   failed ||= smoke.fails.length > 0;
 
   const csp = await run('/test/csp.html', 'csp', 20000);
-  const cspOk = csp.styled && csp.rendered && csp.violations.length === 0;
+  const cspOk = csp.styled && csp.rendered && csp.destroyed === true && csp.violations.length === 0;
   console.log(`csp:   ${cspOk ? 'ok' : 'FAILED ' + JSON.stringify(csp)}`);
   failed ||= !cspOk;
 } catch (e) { console.error(e.message); failed = true; }
-finally { chrome.kill(); server.close(); }
+finally {
+  chrome.kill(); server.close();
+  await new Promise(r => { chrome.once('exit', r); setTimeout(r, 3000); }); // let Chrome release its profile
+  try { rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* temp dir; the OS cleans it */ }
+}
 process.exit(failed ? 1 : 0);

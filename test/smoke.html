@@ -381,6 +381,12 @@ function drawCost(run) {
     return (!el.querySelector('.mc-leg [data-i]') && !!el.querySelector('[data-t=png]')) || el.querySelector('.mc-leg').innerHTML;
   });
 
+  await test('format: null falls back to the default formatter', async () => {
+    const el = box(); const c = MiniChart(el, { labels: ['a', 'b'], series: [{ name: 'A', data: [1200, 2] }] });
+    c.update({ format: null }); await frames(); P(el, 'pointermove', 1); await frames();
+    return (errors.length === 0 && pick(el).tip.innerText.toLowerCase().includes('1.2k')) || [errors, pick(el).tip.innerText];
+  });
+
   await test('no uncaught errors overall', async () => errors.length === 0 || errors);
 
   const fails = results.filter(r => !r.ok);
