@@ -122,8 +122,8 @@
     </div>
 
     <section aria-labelledby="proof-title">
-      <h2 id="proof-title">A fraction of the size, at full speed.</h2>
-      <p class="intro">Measured in Chrome on an M1 MacBook Air with a 700 × 300 line chart, animations off. Your numbers will vary.</p>
+      <h2 id="proof-title">A fraction of the size, and quick with big data.</h2>
+      <p class="intro">Measured in Chrome on an M1 MacBook Air: 700 × 300 line chart, animations off, median of 5 runs. Your numbers will vary.</p>
       <div class="proof">
         <div>
           <h3>Download size, gzipped</h3>
@@ -132,7 +132,7 @@
         <div>
           <h3>Time to draw 100,000 points</h3>
           <div id="speed" class="chart"></div>
-          <p class="caption">ApexCharts didn't finish: it took 28.7 seconds for 10,000 points.</p>
+          <p class="caption">ApexCharts isn't shown: in an earlier single run it took 28.7 seconds for 10,000 points. uPlot draws faster; MiniChart adds tooltips, zoom, accessibility and right-to-left on top.</p>
         </div>
       </div>
     </section>
@@ -239,7 +239,7 @@
   MiniChart('#speed', {
     type: 'bar', title: 'Time to draw 100,000 points', labels: ['MiniChart', 'uPlot', 'Chart.js', 'ApexCharts'],
     format: v => v == null ? 'did not finish' : Math.round(v) + ' ms',
-    series: [{ name: 'Time to draw', data: [21, 21, 464, null], color: grey, colors: [blue] }],
+    series: [{ name: 'Time to draw', data: [71, 31, 1891, null], color: grey, colors: [blue] }],
   });
 
   // Measure: two years of ticket sales.

@@ -115,14 +115,16 @@ Don't add `'allow-duplicates'`. The policy only passes through HTML the chart ha
 
 ## Size and speed
 
-Measured in Chrome on an M1 MacBook Air: a 700 × 300 line chart, animations off, median of runs.
+Measured on 27 Nov 2026 in Chrome (60 Hz) on an M1 MacBook Air: a 700 × 300 line chart, animations off, time until the chart is on screen, median of 5 runs. Your numbers will vary.
 
-| Library | Download (gzip) | Start-up | 1,000 points | 100,000 points |
-|---|---|---|---|---|
-| **MiniChart** | **8.3 KB** | **2.5 ms** | 21 ms | 21 ms |
-| uPlot 1.6.30 | 21 KB | 3.4 ms | 20 ms | 21 ms |
-| Chart.js 4.4.1 | 68 KB | 7.4 ms | 22 ms | 464 ms |
-| ApexCharts 3.54.1 | 137 KB | 16 ms | 199 ms | 28.7 s at 10,000 points |
+| Library | Download (gzip) | 100,000 points |
+|---|---|---|
+| **MiniChart 0.2.0** | **8.3 KB** | **71 ms** |
+| uPlot 1.6.30 | 21 KB | 31 ms |
+| Chart.js 4.4.1 | 68 KB | 1,891 ms |
+| ApexCharts 3.54.1 | 137 KB | not re-tested (28.7 s for 10,000 points in an earlier single run) |
+
+uPlot is faster at raw drawing; MiniChart trades some speed for built-in tooltips, legend, zoom and pan, accessibility and right-to-left support.
 
 ## Browser support
 
