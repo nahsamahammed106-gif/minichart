@@ -367,7 +367,7 @@
       el.setAttribute('aria-label', `${o.title ? o.title + '. ' : ''}${o.type} chart, ${N} points. ${sum.join('. ')}. Arrow keys explore, plus and minus zoom, 0 resets.`);
       const rows = Math.min(N, 500); // ponytail: table capped at 500 rows, paginate if screen-reader users need all of a huge series
       html(table, `<caption>${esc(o.title || 'Chart data')}${N > rows ? ` (first ${rows} of ${N})` : ''}</caption><tr><th>Label</th>${S.map(s => `<th>${esc(s.name)}</th>`).join('')}</tr>` +
-        Array.from({ length: rows }, (_, i) => `<tr><th>${esc(lab(i))}</th>${S.map(s => `<td>${esc(fmt(s.data[i]))}</td>`).join('')}</tr>`).join(''));
+        Array.from({ length: rows }, (_, i) => `<tr><th>${esc(lab(i))}</th>${S.map(s => `<td>${esc(o.format(s.data[i]))}</td>`).join('')}</tr>`).join(''));
     }
 
     function update(next) {

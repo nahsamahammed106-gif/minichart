@@ -378,6 +378,12 @@ function drawCost(run) {
     return (el.querySelectorAll('table tr').length === 501 && sr.height <= 1 && el.scrollHeight <= el.clientHeight + 2) || [sr.height, el.scrollHeight, el.clientHeight];
   });
 
+  await test('screen-reader table uses the chart\'s own number format', async () => {
+    const el = box(); MiniChart(el, { labels: ['a', 'b'], format: v => v == null ? 'n/a' : v + ' ms', series: [{ name: 'A', data: [1891, null] }] }); await frames();
+    const cells = [...el.querySelectorAll('table td')].map(td => td.textContent);
+    return (cells[0] === '1891 ms' && cells[1] === 'n/a') || cells;
+  });
+
   await test('no uncaught errors overall', async () => errors.length === 0 || errors);
 
   const fails = results.filter(r => !r.ok);
