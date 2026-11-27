@@ -21,17 +21,7 @@ Zoom, pan, pinch, tooltips, a measure tool, keyboard and screen-reader support, 
 </script>
 ```
 
-With npm:
-
-```bash
-npm install minichart
-```
-
-```js
-import MiniChart from 'minichart';
-```
-
-From a CDN, pinned to a release:
+It isn't on npm yet. From a CDN, pinned to a release:
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/nahsamahammed106-gif/minichart@v0.2.0/src/minichart.js"
@@ -128,7 +118,7 @@ uPlot is faster at raw drawing; MiniChart trades some speed for built-in tooltip
 
 ## Browser support
 
-Current Chrome, Edge, Firefox and Safari (16.4 or newer).
+Tested in Chrome. It should work in current Edge, Firefox and Safari 16.4 or newer, but those haven't been tested yet.
 
 ## Development
 
