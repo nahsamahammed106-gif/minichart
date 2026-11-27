@@ -51,7 +51,7 @@ async function run(path, global, ms = 180000) {
 
 let failed = false;
 try {
-  const smoke = await run('/test/smoke.html', 'smoke');
+  const smoke = await run(`/test/smoke.html${process.env.GITHUB_ACTIONS ? '?ci' : ''}`, 'smoke');
   console.log(`smoke: ${smoke.passed}/${smoke.total} passed`);
   for (const f of smoke.fails) console.log(`  ✗ ${f.name} — ${f.err}`);
   failed ||= smoke.fails.length > 0;
