@@ -141,12 +141,12 @@
       const per = pw() / span();
       let wmax = 0;
       for (let i = a; i <= b; i += Math.max(1, (b - a) / 20 | 0)) wmax = Math.max(wmax, ctx.measureText(lab(i)).width);
-      const step = Math.max(1, Math.ceil((wmax + 16) / per));
+      const step = Math.max(1, Math.ceil((wmax + 6) / per));
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       for (let i = Math.ceil(a / step) * step; i <= b; i += step) {
-        const x = X(i);
-        if (x >= PL() - 1 && x <= PL() + pw() + 1) ctx.fillText(lab(i), x, H - B + 6);
+        const x = X(i), t = lab(i), hw = ctx.measureText(t).width / 2;
+        if (x >= PL() - 1 && x <= PL() + pw() + 1 && x - hw >= 0 && x + hw <= W) ctx.fillText(t, x, H - B + 6); // skip labels that would be cut off
       }
 
       ctx.save();
