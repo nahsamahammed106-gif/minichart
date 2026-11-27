@@ -50,8 +50,8 @@
     el.classList.add('mc');
     el.tabIndex = 0;
     el.setAttribute('role', 'figure');
-    html(el, '<div class="mc-leg"></div><div class="mc-plot"><canvas aria-hidden="true"></canvas><div class="mc-tip" aria-hidden="true"></div></div><div class="mc-sr" aria-live="polite"></div><table class="mc-sr"></table>');
-    const [leg, plot, live, table] = el.children, cv = plot.firstChild, tip = plot.lastChild, ctx = cv.getContext('2d');
+    html(el, '<div class="mc-leg"></div><div class="mc-plot"><canvas aria-hidden="true"></canvas><div class="mc-tip" aria-hidden="true"></div></div><div class="mc-sr" aria-live="polite"></div><div class="mc-sr"><table></table></div>'); // a table ignores height:1px, so the div clips it
+    const [leg, plot, live, tbox] = el.children, table = tbox.firstChild, cv = plot.firstChild, tip = plot.lastChild, ctx = cv.getContext('2d');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const R = 12, T = 10, B = 24, ptr = new Map(), hide = new Set();
     let o = {}, S = [], N = 0, i0 = 0, i1 = 0, W = 0, H = 0, L = 40, rtl = false;

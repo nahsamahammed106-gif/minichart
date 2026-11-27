@@ -387,6 +387,12 @@ function drawCost(run) {
     return (errors.length === 0 && pick(el).tip.innerText.toLowerCase().includes('1.2k')) || [errors, pick(el).tip.innerText];
   });
 
+  await test('hidden data table adds no blank space to the page', async () => {
+    const el = box(); MiniChart(el, { series: [{ name: 'A', data: series(2000) }] }); await frames();
+    const sr = el.querySelector('table').parentElement.getBoundingClientRect();
+    return (el.querySelectorAll('table tr').length === 501 && sr.height <= 1 && el.scrollHeight <= el.clientHeight + 2) || [sr.height, el.scrollHeight, el.clientHeight];
+  });
+
   await test('no uncaught errors overall', async () => errors.length === 0 || errors);
 
   const fails = results.filter(r => !r.ok);
