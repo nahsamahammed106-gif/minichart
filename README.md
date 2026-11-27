@@ -4,7 +4,7 @@ Interactive line, area and bar charts in under 9 KB, with no dependencies.
 
 Zoom, pan, pinch, tooltips, a measure tool, keyboard and screen-reader support, dark mode, Arabic right-to-left layouts and 100,000-point datasets work out of the box.
 
-**[Live demo](demo/index.html)**
+**[Live demo](https://nahsamahammed106-gif.github.io/minichart/demo/)**
 
 ## Quick start
 
