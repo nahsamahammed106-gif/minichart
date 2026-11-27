@@ -429,4 +429,5 @@
   }
 
   root.MiniChart = MiniChart;
+  if (typeof module === 'object' && module.exports) module.exports = MiniChart; // require('minichart') / import MiniChart from 'minichart'
 })(globalThis);

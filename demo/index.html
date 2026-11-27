@@ -141,7 +141,7 @@
     <table>
       <thead><tr><th scope="col">Library</th><th scope="col">Download (gzip)</th><th scope="col">Start-up</th><th scope="col">1,000 points</th><th scope="col">100,000 points</th></tr></thead>
       <tbody>
-        <tr><td>MiniChart (unminified)</td><td>8.2 KB</td><td>2.5 ms</td><td>21 ms</td><td>21 ms</td></tr>
+        <tr><td>MiniChart (unminified)</td><td>8.3 KB</td><td>2.5 ms</td><td>21 ms</td><td>21 ms</td></tr>
         <tr><td>uPlot 1.6.30</td><td>21 KB</td><td>3.4 ms</td><td>20 ms</td><td>21 ms</td></tr>
         <tr><td>Chart.js 4.4.1</td><td>68 KB</td><td>7.4 ms</td><td>22 ms</td><td>464 ms</td></tr>
         <tr><td>ApexCharts 3.54.1</td><td>137 KB</td><td>16 ms</td><td>199 ms</td><td>28.7 s at 10,000</td></tr>
@@ -176,7 +176,7 @@
     type: 'bar', title: 'Download size, gzipped',
     labels: ['MiniChart', 'uPlot', 'Chart.js', 'Apex'],
     format: v => Math.round(v * 10) / 10 + ' KB',
-    series: [{ name: 'Gzipped size', data: [8.2, 21, 68, 137.1], color: '#2f5bea' }],
+    series: [{ name: 'Gzipped size', data: [8.3, 21, 68, 137.1], color: '#2f5bea' }],
   });
 
   const days = Array.from({ length: 365 }, (_, i) => new Date(2026, 0, 1 + i).toLocaleDateString('en', { month: 'short', day: 'numeric' }));

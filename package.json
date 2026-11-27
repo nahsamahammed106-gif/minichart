@@ -1,0 +1,15 @@
+{
+  "name": "minichart",
+  "version": "0.1.0",
+  "description": "An 8 KB interactive chart library: zoom, pan, tooltips, keyboard and screen-reader support, Arabic RTL, no dependencies.",
+  "main": "src/minichart.js",
+  "types": "index.d.ts",
+  "files": ["src/minichart.js", "index.d.ts"],
+  "scripts": {
+    "test": "node test/run.mjs",
+    "size": "gzip -9c src/minichart.js | wc -c"
+  },
+  "keywords": ["chart", "charts", "canvas", "line-chart", "bar-chart", "zoom", "accessible", "rtl", "lightweight"],
+  "license": "MIT",
+  "engines": { "node": ">=22" }
+}

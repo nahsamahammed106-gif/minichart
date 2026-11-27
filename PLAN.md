@@ -19,15 +19,15 @@ Extras: Shift+drag measure (Δ and %), ♪ sonify with playhead, springy y-axis,
 
 ## Repo layout
 ```
-src/minichart.js   dist/   index.d.ts   test/   demo/index.html
-README.md  LICENSE (MIT)  CHANGELOG.md  CONTRIBUTING.md  .github/workflows/ci.yml
+src/minichart.js   index.d.ts   test/   demo/index.html
+README.md  LICENSE (MIT)  package.json  .github/workflows/ci.yml
 ```
 
 ## Phases
 1. Core library: line, area, bar + interactions, verified in a browser.
 2. Demo page (GitHub Pages): 4 examples incl. 100k points and Arabic RTL, light + dark.
-3. Packaging: esbuild (ESM + IIFE), types, node:test + browser smoke test, CI with size limit, README.
+3. Packaging: no build step (single file, CommonJS + global), hand-written types, headless-Chrome test runner with no dependencies, CI with a 12 KB size limit, README.
 4. Publish: maintainer pushes to GitHub and npm.
 
 ## Decisions
-Name `minichart` · MIT · v1 types line/area/bar · esbuild (dev only).
+Name `minichart` · MIT · v1 types line/area/bar · no build step and no dev dependencies (minifying was skipped: 8.3 KB gzipped is already under budget).

@@ -1,0 +1,21 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Size limit (12 KB gzipped)
+        run: |
+          size=$(gzip -9c src/minichart.js | wc -c)
+          echo "minichart.js: $size bytes gzipped"
+          test "$size" -le 12288
+      - name: Browser tests (headless Chrome)
+        run: node test/run.mjs
