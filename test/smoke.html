@@ -211,7 +211,7 @@ function drawCost(run) {
   await test('destroy() cleans up the element', async () => {
     const el = box(); const c = MiniChart(el, { series: [{ name: 'A', data: [1, 2] }] }); c.destroy();
     key(el, '+');
-    return (el.innerHTML === '' && !el.classList.contains('mc') && !el.hasAttribute('tabindex') && !el.onkeydown) || el.outerHTML.slice(0, 120);
+    return (el.innerHTML === '' && !el.classList.contains('mc') && !el.hasAttribute('tabindex')) || el.outerHTML.slice(0, 120);
   });
 
   await test('touch long-press then drag measures; quick drag still pans', async () => {
@@ -259,6 +259,12 @@ function drawCost(run) {
     await wait(700); P(el, 'pointermove', 1); await frames();
     const t = el.querySelector('table').innerText;
     return (errors.length === 0 && !/NaN|Infinity/.test(t) && t.includes('2')) || t;
+  });
+
+  await test('ROBUST: BigInt and Symbol data do not crash', async () => {
+    const el = box(); MiniChart(el, { series: [{ name: 'A', data: [1n, 5n, Symbol('x'), 3] }] }); await frames();
+    const t = el.querySelector('table').innerText;
+    return (errors.length === 0 && t.includes('5') && t.includes('–')) || [errors, t];
   });
 
   await test('SEC: huge values with tiny range do not freeze the page', async () => {
@@ -325,6 +331,17 @@ function drawCost(run) {
   await test('API: --mc-tip-bg variable themes the tooltip', async () => {
     const el = box(); el.style.setProperty('--mc-tip-bg', 'rgb(1, 2, 3)'); MiniChart(el, { series: [{ name: 'A', data: [1, 2] }] });
     return getComputedStyle(el.querySelector('.mc-tip')).backgroundColor === 'rgb(1, 2, 3)';
+  });
+
+  await test('destroy() keeps the host page\'s own onkeydown handler', async () => {
+    const el = box(); const mine = () => {}; el.onkeydown = mine;
+    MiniChart(el, { series: [{ name: 'A', data: [1, 2] }] }).destroy();
+    return el.onkeydown === mine;
+  });
+
+  await test('null entries in series are ignored', async () => {
+    const el = box(); MiniChart(el, { series: [null, { name: 'A', data: [1, 2] }, undefined] }); await frames();
+    return (errors.length === 0 && el.querySelectorAll('[data-i]').length === 1) || errors;
   });
 
   await test('no uncaught errors overall', async () => errors.length === 0 || errors);

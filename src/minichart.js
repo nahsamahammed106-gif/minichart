@@ -24,7 +24,12 @@
   const nf = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
   const fmt = v => v == null || v !== v ? '–' : nf.format(v);
 
-  let sheet;
+  let sheet, tt;
+  // Trusted Types: all HTML below is built from escaped values, so pass-through is safe. Host CSP must allow policy "minichart".
+  try { tt = root.trustedTypes && root.trustedTypes.createPolicy('minichart', { createHTML: s => s }); } catch (_) { /* policy name not allowed */ }
+  const html = (node, s) => { node.innerHTML = tt ? tt.createHTML(s) : s; };
+  // Number() handles BigInt (unary + throws on it); Symbol still throws, so catch → null.
+  const num = v => { try { v = v == null || v === '' ? NaN : Number(v); } catch (_) { return null; } return isFinite(v) ? v : null; };
 
   function nice(lo, hi, n) {
     if (lo === hi) { lo -= 1; hi += 1; }
@@ -36,15 +41,14 @@
   function MiniChart(el, opts) {
     if (typeof el === 'string') el = document.querySelector(el);
     if (!el) throw new Error('MiniChart: element not found');
-    if (!sheet) { // constructable stylesheet: allowed under strict CSP (no 'unsafe-inline' needed)
-      sheet = new CSSStyleSheet();
-      sheet.replaceSync(CSS);
-      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    if (!sheet) { // constructable stylesheet: allowed under strict CSP; <style> fallback for Safari < 16.4
+      if (document.adoptedStyleSheets) { sheet = new CSSStyleSheet(); sheet.replaceSync(CSS); document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]; }
+      else sheet = document.head.appendChild(Object.assign(document.createElement('style'), { textContent: CSS }));
     }
     el.classList.add('mc');
     el.tabIndex = 0;
     el.setAttribute('role', 'figure');
-    el.innerHTML = '<div class="mc-leg"></div><div class="mc-plot"><canvas aria-hidden="true"></canvas><div class="mc-tip" aria-hidden="true"></div></div><div class="mc-sr" aria-live="polite"></div><table class="mc-sr"></table>';
+    html(el, '<div class="mc-leg"></div><div class="mc-plot"><canvas aria-hidden="true"></canvas><div class="mc-tip" aria-hidden="true"></div></div><div class="mc-sr" aria-live="polite"></div><table class="mc-sr"></table>');
     const [leg, plot, live, table] = el.children, cv = plot.firstChild, tip = plot.lastChild, ctx = cv.getContext('2d');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const R = 12, T = 10, B = 24, ptr = new Map(), hide = new Set();
@@ -220,10 +224,10 @@
     const swatch = (box, list) => box.querySelectorAll('i').forEach((i, k) => { i.style.background = list[k].color; }); // CSSOM, not style="": works under strict CSP
     function show() {
       const V = vis().map(si => S[si]);
-      let html = '', x = 0;
+      let out = '', x = 0;
       if (meas && meas.a !== meas.b) {
         const p = Math.min(meas.a, meas.b), q = Math.max(meas.a, meas.b);
-        html = `<b>${esc(lab(p))} → ${esc(lab(q))}</b>` + V.map(s => {
+        out = `<b>${esc(lab(p))} → ${esc(lab(q))}</b>` + V.map(s => {
           const u = s.data[p], w = s.data[q];
           if (u == null || w == null) return row(s, '–');
           const d = w - u;
@@ -231,12 +235,12 @@
         }).join('');
         x = X(q);
       } else if (hov >= 0) {
-        html = `<b>${esc(lab(hov))}</b>` + V.map(s => row(s, o.format(s.data[hov]))).join('');
+        out = `<b>${esc(lab(hov))}</b>` + V.map(s => row(s, o.format(s.data[hov]))).join('');
         x = X(hov);
       }
-      tip.style.opacity = html ? 1 : 0;
-      if (!html) return;
-      tip.innerHTML = html;
+      tip.style.opacity = out ? 1 : 0;
+      if (!out) return;
+      html(tip, out);
       swatch(tip, V);
       const w = tip.offsetWidth;
       tip.style.left = Math.max(0, x + 14 + w > W ? x - 14 - w : x + 14) + 'px';
@@ -298,7 +302,7 @@
       else zoom(idxAt(px(e)), Math.exp(Math.max(-50, Math.min(50, e.deltaY)) * (e.ctrlKey ? 0.01 : 0.003)));
     }, { passive: false });
 
-    el.onkeydown = e => {
+    const onKey = e => {
       const k = e.key, c = hov >= 0 ? hov : (i0 + i1) / 2;
       if (k === 'ArrowRight' || k === 'ArrowLeft') {
         const d = (k === 'ArrowRight' ? 1 : -1) * dir() * (e.shiftKey ? 10 : 1);
@@ -313,10 +317,11 @@
       tick();
       setTimeout(() => { live.textContent = tip.style.opacity === '1' ? tip.innerText.replace(/\n/g, ', ') : ''; }, 60);
     };
+    el.addEventListener('keydown', onKey);
 
     function legend() {
-      leg.innerHTML = S.map((s, si) => `<button type="button" aria-pressed="${!hide.has(si)}" data-i="${si}"><i></i>${esc(s.name)}</button>`).join('') +
-        '<span class="mc-tools"><button type="button" data-t="play" title="Play as sound" aria-label="Play the data as sound">♪</button><button type="button" data-t="png" title="Download PNG" aria-label="Download chart as PNG">⤓</button></span>';
+      html(leg, S.map((s, si) => `<button type="button" aria-pressed="${!hide.has(si)}" data-i="${si}"><i></i>${esc(s.name)}</button>`).join('') +
+        '<span class="mc-tools"><button type="button" data-t="play" title="Play as sound" aria-label="Play the data as sound">♪</button><button type="button" data-t="png" title="Download PNG" aria-label="Download chart as PNG">⤓</button></span>');
       swatch(leg, S);
     }
     leg.onclick = e => {
@@ -384,18 +389,18 @@
       });
       el.setAttribute('aria-label', `${o.title ? o.title + '. ' : ''}${o.type} chart, ${N} points. ${sum.join('. ')}. Arrow keys explore, plus and minus zoom, 0 resets.`);
       const rows = Math.min(N, 500); // ponytail: table capped at 500 rows, paginate if screen-reader users need all of a huge series
-      table.innerHTML = `<caption>${esc(o.title || 'Chart data')}${N > rows ? ` (first ${rows} of ${N})` : ''}</caption><tr><th>Label</th>${S.map(s => `<th>${esc(s.name)}</th>`).join('')}</tr>` +
-        Array.from({ length: rows }, (_, i) => `<tr><th>${esc(lab(i))}</th>${S.map(s => `<td>${fmt(s.data[i])}</td>`).join('')}</tr>`).join('');
+      html(table, `<caption>${esc(o.title || 'Chart data')}${N > rows ? ` (first ${rows} of ${N})` : ''}</caption><tr><th>Label</th>${S.map(s => `<th>${esc(s.name)}</th>`).join('')}</tr>` +
+        Array.from({ length: rows }, (_, i) => `<tr><th>${esc(lab(i))}</th>${S.map(s => `<td>${fmt(s.data[i])}</td>`).join('')}</tr>`).join(''));
     }
 
     function update(next) {
       if (dead) return;
       const prev = S.length ? S.map(s => s.data) : null;
       o = { type: 'line', format: fmt, ...o, ...next };
-      S = (o.series || []).map((s, i) => ({
+      S = (o.series || []).filter(Boolean).map((s, i) => ({
         name: 'Series ' + (i + 1), ...s,
         color: norm(s.color) || PAL[i % PAL.length],
-        data: Array.from(s.data || [], v => v == null || v === '' || !isFinite(v) ? null : +v) // drop NaN/Infinity/junk: they break scales
+        data: Array.from(s.data || [], num) // drop NaN/Infinity/junk: they break scales
       }));
       const n = o.labels ? o.labels.length : Math.max(0, ...S.map(s => s.data.length));
       if (n !== N || !prev) { N = n; i0 = 0; i1 = Math.max(0, N - 1); }
@@ -419,7 +424,7 @@
 
     return {
       update, reset,
-      destroy() { dead = true; ro.disconnect(); mo.disconnect(); mq.removeEventListener('change', tick); cancelAnimationFrame(raf); clearTimeout(press); el.onkeydown = null; el.classList.remove('mc'); el.removeAttribute('tabindex'); el.removeAttribute('role'); el.removeAttribute('aria-label'); el.innerHTML = ''; }
+      destroy() { dead = true; ro.disconnect(); mo.disconnect(); mq.removeEventListener('change', tick); cancelAnimationFrame(raf); clearTimeout(press); el.removeEventListener('keydown', onKey); el.classList.remove('mc'); el.removeAttribute('tabindex'); el.removeAttribute('role'); el.removeAttribute('aria-label'); el.innerHTML = ''; }
     };
   }
 
