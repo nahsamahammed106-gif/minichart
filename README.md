@@ -118,7 +118,7 @@ uPlot is faster at raw drawing; MiniChart trades some speed for built-in tooltip
 
 ## Browser support
 
-Tested in Chrome. It should work in current Edge, Firefox and Safari 16.4 or newer, but those haven't been tested yet.
+Tested in Chrome. It should work in current Edge, Firefox and Safari 16.4 or newer, but those haven't been tested yet. Touch gestures (pinch, long-press to measure) are tested with simulated touch only, not yet on a real phone.
 
 ## Development
 
