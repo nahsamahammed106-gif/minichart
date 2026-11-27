@@ -24,8 +24,8 @@ Zoom, pan, pinch, tooltips, a measure tool, keyboard and screen-reader support, 
 It isn't on npm yet. From a CDN, pinned to a release:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/nahsamahammed106-gif/minichart@v0.2.0/src/minichart.js"
-        integrity="sha384-zOjthgkOQNWIQu2FVYA8zdN5NU0vqza9bof99g1lxsscWopJSp25BysqYdhCfBma"
+<script src="https://cdn.jsdelivr.net/gh/nahsamahammed106-gif/minichart@v0.2.1/src/minichart.js"
+        integrity="sha384-QM+h315lypMqyO72xiPVtd/oBl6QEFhkSBAuL5NN+cmYONfdt1MHR3IYT/n+Bf8K"
         crossorigin="anonymous"></script>
 ```
 
