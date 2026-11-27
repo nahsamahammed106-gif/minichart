@@ -1,5 +1,5 @@
 /*! MiniChart · tiny interactive canvas charts · MIT
- *  const c = MiniChart('#el', { type: 'line'|'area'|'bar', title, labels: [...], series: [{ name, data: [...], color? }], format?, zero? })
+ *  const c = MiniChart('#el', { type: 'line'|'area'|'bar', title, labels: [...], series: [{ name, data: [...], color? }], format?, zero?, sound? })
  *  c.update({ series }) · c.reset() · c.destroy()
  */
 (function (root) {
@@ -72,6 +72,7 @@
     const tick = () => { if (!dead) raf = raf || requestAnimationFrame(draw); };
     const px = e => e.clientX - plot.getBoundingClientRect().left;
     const vis = () => S.map((_, si) => si).filter(si => !hide.has(si));
+    const trace = seg => { ctx.beginPath(); seg.forEach(([x, y], j) => j ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); };
 
     function val(si, i, e) {
       const v = S[si].data[i];
@@ -181,8 +182,7 @@
           g.addColorStop(1, alpha(s.color, 0));
           ctx.fillStyle = g;
           for (const seg of segs) {
-            ctx.beginPath();
-            seg.forEach(([x, y], j) => j ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+            trace(seg);
             ctx.lineTo(seg[seg.length - 1][0], base);
             ctx.lineTo(seg[0][0], base);
             ctx.fill();
@@ -192,8 +192,7 @@
         ctx.lineWidth = 2;
         ctx.lineJoin = ctx.lineCap = 'round';
         for (const seg of segs) {
-          ctx.beginPath();
-          seg.forEach(([x, y], j) => j ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+          trace(seg);
           ctx.stroke();
           if (per > 14) for (const [x, y] of seg) { ctx.beginPath(); ctx.arc(x, y, 2.5, 0, 7); ctx.fill(); }
         }
@@ -247,7 +246,7 @@
     }
 
     function view(a, b) {
-      const s = Math.min(N - 1, Math.max(Math.min(N - 1, o.minSpan || 4), b - a));
+      const s = Math.min(N - 1, Math.max(Math.min(N - 1, 4), b - a));
       i0 = Math.max(0, Math.min(a, N - 1 - s));
       i1 = i0 + s;
       tick();
@@ -270,7 +269,6 @@
         press = setTimeout(() => {
           if (drag !== d || Math.abs(ptr.get(e.pointerId) - d.x) > 8) return;
           drag = null; meas = { a: i, b: i };
-          if (navigator.vibrate) navigator.vibrate(10);
           tick();
         }, 450);
       }
@@ -315,13 +313,14 @@
       else return;
       e.preventDefault();
       tick();
-      setTimeout(() => { live.textContent = tip.style.opacity === '1' ? tip.innerText.replace(/\n/g, ', ') : ''; }, 60);
+      show(); // update tooltip now, not on the next frame, so the announcement can't be stale
+      live.textContent = tip.style.opacity === '1' ? tip.innerText.replace(/\n/g, ', ') : '';
     };
     el.addEventListener('keydown', onKey);
 
     function legend() {
       html(leg, S.map((s, si) => `<button type="button" aria-pressed="${!hide.has(si)}" data-i="${si}"><i></i>${esc(s.name)}</button>`).join('') +
-        '<span class="mc-tools"><button type="button" data-t="play" title="Play as sound" aria-label="Play the data as sound">♪</button><button type="button" data-t="png" title="Download PNG" aria-label="Download chart as PNG">⤓</button></span>');
+        '<span class="mc-tools">' + (o.sound ? '<button type="button" data-t="play" title="Play as sound" aria-label="Play the data as sound">♪</button>' : '') + '<button type="button" data-t="png" title="Download PNG" aria-label="Download chart as PNG">⤓</button></span>');
       swatch(leg, S);
     }
     leg.onclick = e => {
@@ -336,12 +335,13 @@
     const hilite = e => { const b = e.target.closest && e.target.closest('[data-i]'); hl = b ? +b.dataset.i : -1; tick(); };
     leg.addEventListener('pointerover', hilite);
     leg.addEventListener('focusin', hilite);
-    leg.addEventListener('pointerleave', () => { hl = -1; tick(); });
-    leg.addEventListener('focusout', () => { hl = -1; tick(); });
+    const unlit = () => { hl = -1; tick(); };
+    leg.addEventListener('pointerleave', unlit);
+    leg.addEventListener('focusout', unlit);
 
     // Sonify: pitch follows the first visible series, playhead sweeps the tooltip along.
     function play() {
-      const si = vis()[0], AC = root.AudioContext || root.webkitAudioContext;
+      const si = vis()[0], AC = root.AudioContext;
       if (si == null || !AC) return;
       const A = new AC(), osc = A.createOscillator(), g = A.createGain();
       const a = Math.ceil(i0), b = Math.floor(i1), n = b - a + 1, d = Math.min(0.15, 6 / n), t = A.currentTime;
@@ -429,4 +429,4 @@
   }
 
   root.MiniChart = MiniChart;
-})(typeof window !== 'undefined' ? window : globalThis);
+})(globalThis);

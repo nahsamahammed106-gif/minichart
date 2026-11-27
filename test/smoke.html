@@ -190,7 +190,7 @@ function drawCost(run) {
   });
 
   await test('sonify: schedules one rising note per point, then closes', async () => {
-    const el = box(); MiniChart(el, { series: [{ name: 'A', data: [1, 2, 3, null, 5] }] }); await wait(700);
+    const el = box(); MiniChart(el, { sound: true, series: [{ name: 'A', data: [1, 2, 3, null, 5] }] }); await wait(700);
     const freqs = []; let closed = false, started = false; const Orig = window.AudioContext;
     window.AudioContext = class extends Orig {
       createOscillator() { const o = super.createOscillator(), f = o.frequency.setValueAtTime.bind(o.frequency); o.frequency.setValueAtTime = (v, t) => (freqs.push(v), f(v, t)); const s = o.start.bind(o); o.start = t => (started = true, s(t)); return o; }
@@ -293,7 +293,7 @@ function drawCost(run) {
   });
 
   await test('SEC: update/destroy after destroy are harmless; sound playhead stops', async () => {
-    const el = box(); const c = MiniChart(el, { series: [{ name: 'A', data: series(20) }] }); await frames();
+    const el = box(); const c = MiniChart(el, { sound: true, series: [{ name: 'A', data: series(20) }] }); await frames();
     const Orig = window.AudioContext; window.AudioContext = class extends OfflineAudioContext { constructor() { super(1, 44100, 44100); } close() { return Promise.resolve(); } };
     el.querySelector('[data-t=play]').click(); window.AudioContext = Orig;
     c.destroy(); c.destroy(); c.update({ series: [{ data: [1] }] }); await wait(200);
@@ -342,6 +342,20 @@ function drawCost(run) {
   await test('null entries in series are ignored', async () => {
     const el = box(); MiniChart(el, { series: [null, { name: 'A', data: [1, 2] }, undefined] }); await frames();
     return (errors.length === 0 && el.querySelectorAll('[data-i]').length === 1) || errors;
+  });
+
+  await test('sound button is opt-in: hidden by default, shown with sound: true', async () => {
+    const a = box(), b = box();
+    MiniChart(a, { series: [{ name: 'A', data: [1, 2] }] }); MiniChart(b, { sound: true, series: [{ name: 'A', data: [1, 2] }] });
+    return (!a.querySelector('[data-t=play]') && !!b.querySelector('[data-t=play]') && !!a.querySelector('[data-t=png]')) || 'wrong';
+  });
+
+  await test('keyboard announcement is correct even when redraws are delayed', async () => {
+    const el = box(); MiniChart(el, { labels: ['a', 'b', 'c', 'd', 'e'], series: [{ name: 'A', data: [1, 2, 3, 4, 5] }] }); await wait(800);
+    const raf = window.requestAnimationFrame; window.requestAnimationFrame = () => 0; // freeze redraws
+    try { key(el, 'ArrowRight'); const first = pick(el).live.textContent; key(el, 'ArrowRight'); const second = pick(el).live.textContent;
+      return (first.startsWith('c') && second.startsWith('d')) || [first, second]; }
+    finally { window.requestAnimationFrame = raf; }
   });
 
   await test('no uncaught errors overall', async () => errors.length === 0 || errors);
