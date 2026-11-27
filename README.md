@@ -34,8 +34,8 @@ import MiniChart from 'minichart';
 From a CDN, pinned to a release:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/nahsamahammed106-gif/minichart@v0.1.1/src/minichart.js"
-        integrity="sha384-6ys7htBzFcp/iMLRlUo/y0kxHZYeXh9dv+tBpZwxJEb6O0rl8UzDfymZZnD42nIB"
+<script src="https://cdn.jsdelivr.net/gh/nahsamahammed106-gif/minichart@v0.2.0/src/minichart.js"
+        integrity="sha384-zOjthgkOQNWIQu2FVYA8zdN5NU0vqza9bof99g1lxsscWopJSp25BysqYdhCfBma"
         crossorigin="anonymous"></script>
 ```
 
